@@ -2464,6 +2464,119 @@ body:has(.overlay.show) .answer.selected{
   #startBtn{position:relative;z-index:8;pointer-events:auto!important}
 }
 
+
+/* ===== V5.8.2 definitive intro centering + mobile start reliability ===== */
+
+/* Force the cinematic content to stay perfectly centered on all viewport types */
+#cinema.cinema{
+  width:100vw!important;
+  height:100dvh!important;
+  min-height:100svh!important;
+  max-height:100dvh!important;
+  overflow:hidden!important;
+  display:block!important;
+}
+#cinema .cinema-inner{
+  position:absolute!important;
+  inset:0!important;
+  width:100%!important;
+  height:100%!important;
+  min-height:0!important;
+  max-height:none!important;
+  margin:0!important;
+  padding:clamp(18px,3vh,32px) 18px!important;
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:center!important;
+  justify-content:center!important;
+  text-align:center!important;
+  transform:none!important;
+  overflow:hidden!important;
+  z-index:6!important;
+}
+#cinema .cinema-logo-wrap{
+  flex:0 0 auto!important;
+  display:grid!important;
+  place-items:center!important;
+  width:min(86vw,560px)!important;
+  margin:0 auto clamp(8px,1.5vh,16px)!important;
+  transform:none!important;
+}
+#cinema .cinema-logo{
+  display:block!important;
+  width:clamp(300px,34vw,500px)!important;
+  max-width:82vw!important;
+  max-height:26vh!important;
+  object-fit:contain!important;
+  margin:0 auto!important;
+  transform-origin:center center!important;
+}
+#cinema .cinema-title{
+  flex:0 0 auto!important;
+  margin:clamp(6px,1vh,12px) 0 4px!important;
+  line-height:1.05!important;
+}
+#cinema .cinema-sub,
+#cinema .cinema-line,
+#cinema .cinema-btn,
+#cinema .cinema-note,
+#cinema .cinema-luxury-caption{
+  flex:0 0 auto!important;
+}
+#cinema .cinema-line{
+  margin:clamp(12px,2vh,20px) auto clamp(14px,2vh,22px)!important;
+}
+
+/* Mobile intro proportions */
+@media(max-width:760px){
+  #cinema .cinema-inner{
+    padding:16px 12px!important;
+    justify-content:center!important;
+  }
+  #cinema .cinema-logo-wrap{
+    width:90vw!important;
+    margin-bottom:8px!important;
+  }
+  #cinema .cinema-logo{
+    width:clamp(245px,72vw,330px)!important;
+    max-width:84vw!important;
+    max-height:24svh!important;
+  }
+  #cinema .cinema-title{
+    font-size:clamp(2.15rem,11vw,3.35rem)!important;
+  }
+  #cinema .cinema-sub{
+    font-size:.9rem!important;
+  }
+  #cinema .cinema-btn{
+    min-height:52px!important;
+    min-width:180px!important;
+  }
+}
+@media(max-width:760px) and (max-height:680px){
+  #cinema .cinema-logo{
+    width:clamp(210px,62vw,270px)!important;
+    max-height:20svh!important;
+  }
+  #cinema .cinema-title{
+    font-size:clamp(1.95rem,9.8vw,2.8rem)!important;
+  }
+  #cinema .cinema-line{
+    margin:8px auto 10px!important;
+  }
+}
+
+/* Make stage and start buttons definitely touchable */
+#stageGrid .stage-card,
+#startBtn{
+  -webkit-tap-highlight-color:transparent;
+  touch-action:manipulation!important;
+}
+#startBtn{
+  pointer-events:auto!important;
+  user-select:none;
+}
+
 </style>
 </head>
 <body>
@@ -2773,6 +2886,7 @@ function buildStages(){
    const info=meta[s];
    const b=document.createElement('button');
    b.className='stage-card';
+   b.dataset.stage=s;
    b.innerHTML=`
      <div class="stage-icon">${info.icon}</div>
      <div class="stage-name">${s}</div>
@@ -2790,6 +2904,9 @@ function buildStages(){
      $('startBtn').style.opacity='1';
    };
    b.onclick=chooseStage;
+   b.addEventListener('pointerup',e=>{
+     if(e.pointerType==='touch'){e.preventDefault();chooseStage();}
+   },{passive:false});
    grid.appendChild(b)
  })
 }
@@ -3021,23 +3138,58 @@ $('cinemaBtn').onclick=async()=>{
  setTimeout(()=>c.classList.add('exit'),710);
  setTimeout(()=>c.remove(),1360);
 };
-async function startSelectedStage(){
- if(!selectedStage)return;
+let stageStartInProgress=false;
+function startSelectedStage(e){
+ if(e){e.preventDefault();e.stopPropagation();}
+ if(stageStartInProgress)return false;
+
+ const selectedCard=$('stageGrid')?.querySelector('.stage-card.selected');
+ if(!selectedStage && selectedCard?.dataset.stage)selectedStage=selectedCard.dataset.stage;
+ if(!selectedStage){
+   $('stageSelectedNote').textContent='اختر مرحلة أولًا';
+   return false;
+ }
+
+ stageStartInProgress=true;
  clearInterval(timerId);
  stopAudio();
- buildRound();
- idx=0;
- used={fifty:false,audience:false,friend:false,swap:false};
- ['fifty','audience','friend','swap'].forEach(id=>$(id).classList.remove('used'));
- $('stageScreen').classList.add('hidden-screen');
- $('endScreen').classList.add('hidden-screen');
- $('gameScreen').classList.remove('hidden-screen');
- document.body.classList.add('game-active');
- window.scrollTo(0,0);
- render();
- playSound(MAP.intro_voice,6500);
+
+ try{
+   buildRound();
+   idx=0;
+   used={fifty:false,audience:false,friend:false,swap:false};
+   ['fifty','audience','friend','swap'].forEach(id=>$(id).classList.remove('used'));
+
+   /* Switch screens BEFORE any sound or rendering work */
+   $('stageScreen').classList.add('hidden-screen');
+   $('endScreen').classList.add('hidden-screen');
+   $('gameScreen').classList.remove('hidden-screen');
+   document.body.classList.add('game-active');
+   document.body.classList.remove('final-question');
+   window.scrollTo(0,0);
+
+   /* Give the browser one frame to paint the game screen */
+   requestAnimationFrame(()=>{
+     Promise.resolve(render())
+       .catch(err=>console.error('render error',err))
+       .finally(()=>{stageStartInProgress=false});
+     /* Sound is completely independent of navigation */
+     try{playSound(MAP.intro_voice,6500)}catch(_){}
+   });
+ }catch(err){
+   console.error('start stage error',err);
+   stageStartInProgress=false;
+   /* Last-resort navigation so mobile never appears stuck */
+   $('stageScreen').classList.add('hidden-screen');
+   $('gameScreen').classList.remove('hidden-screen');
+   document.body.classList.add('game-active');
+ }
+ return false;
 }
 $('startBtn').onclick=startSelectedStage;
+$('startBtn').addEventListener('pointerup',e=>{
+ if(e.pointerType==='touch')startSelectedStage(e);
+},{passive:false});
 $('restartBtn').onclick=()=>{
  idx=0;used={fifty:false,audience:false,friend:false,swap:false};
  ['fifty','audience','friend','swap'].forEach(id=>$(id).classList.remove('used'));
