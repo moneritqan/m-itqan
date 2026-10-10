@@ -1925,6 +1925,186 @@ body:has(.overlay.show) .answer.selected{
   body.game-active .quiz-core{justify-content:flex-start}
 }
 
+
+/* ===== V5.7 ITQAN visual identity + full-width mobile layout ===== */
+:root{
+  --itqan-purple:#7C499C;
+  --itqan-purple-dark:#4E2A62;
+  --itqan-text:#3D2947;
+  --itqan-gold:#B58925;
+}
+
+/* Brand-aligned typography */
+.question,
+.question-text-layer{
+  color:var(--itqan-purple-dark)!important;
+  font-weight:900!important;
+}
+.answer{
+  color:var(--itqan-text)!important;
+}
+.answer:before{
+  color:var(--itqan-purple)!important;
+}
+.domain-chip,
+.stage-name,
+.stage-select h2,
+.title h1{
+  color:var(--itqan-purple)!important;
+}
+
+/* Better selected / reveal identity */
+.answer.selected{
+  border-inline-start:4px solid var(--itqan-purple)!important;
+}
+.answer.correct{
+  border-inline-start:4px solid #2f8f5b!important;
+}
+.answer.wrong{
+  border-inline-start:4px solid #c94a63!important;
+}
+
+/* Progress: purple to gold toward the end */
+.question-progress i{
+  background:linear-gradient(90deg,var(--itqan-purple) 0%,#9D68B7 55%,var(--itqan-gold) 100%)!important;
+  box-shadow:0 0 8px rgba(124,73,156,.18);
+}
+
+/* Unified mobile width: almost edge-to-edge */
+@media(max-width:760px){
+  body.game-active .app{
+    padding-left:2px!important;
+    padding-right:2px!important;
+  }
+
+  body.game-active .header{
+    width:calc(100vw - 4px)!important;
+    max-width:none!important;
+    margin-left:2px!important;
+    margin-right:2px!important;
+    border-radius:14px!important;
+  }
+
+  body.game-active #gameScreen{
+    width:100%!important;
+    max-width:none!important;
+  }
+
+  body.game-active #gameScreen .layout,
+  body.game-active #gameScreen .stage,
+  body.game-active .question-wrap,
+  body.game-active .question,
+  body.game-active .answers,
+  body.game-active .message,
+  body.game-active #audienceBox,
+  body.game-active #friendCard{
+    width:100%!important;
+    max-width:none!important;
+  }
+
+  body.game-active .question{
+    border-radius:12px!important;
+    margin-left:0!important;
+    margin-right:0!important;
+  }
+
+  body.game-active .answers{
+    padding-left:0!important;
+    padding-right:0!important;
+  }
+
+  body.game-active .answer{
+    width:100%!important;
+    max-width:none!important;
+    margin:0!important;
+    border-radius:10px!important;
+  }
+
+  /* RTL answers: option letter on the right */
+  body.game-active .answer[dir="rtl"]{
+    padding-right:40px!important;
+    padding-left:9px!important;
+    text-align:right!important;
+  }
+  body.game-active .answer[dir="rtl"]:before{
+    right:7px!important;
+    left:auto!important;
+  }
+
+  /* LTR answers: keep option letter on the left */
+  body.game-active .answer[dir="ltr"]{
+    padding-left:40px!important;
+    padding-right:9px!important;
+    text-align:left!important;
+  }
+  body.game-active .answer[dir="ltr"]:before{
+    left:7px!important;
+    right:auto!important;
+  }
+
+  /* Keep status row aligned to same usable width */
+  body.game-active .status,
+  body.game-active .question-progress,
+  body.game-active .mobile-prize-toggle{
+    width:100%!important;
+    max-width:none!important;
+  }
+
+  /* Lifelines also nearly edge-to-edge */
+  body.game-active .lifelines{
+    left:2px!important;
+    right:2px!important;
+    width:calc(100vw - 4px)!important;
+    max-width:none!important;
+    padding-left:3px!important;
+    padding-right:3px!important;
+    gap:2px!important;
+  }
+
+  body.game-active .life{
+    border-radius:10px!important;
+  }
+
+  /* Header balance across narrow screens */
+  body.game-active .header{
+    grid-template-columns:68px minmax(0,1fr) auto!important;
+    column-gap:4px!important;
+  }
+  body.game-active .header .logo{
+    width:66px!important;
+    max-height:40px!important;
+  }
+  body.game-active .header .title h1{
+    font-size:.92rem!important;
+    white-space:nowrap;
+  }
+  body.game-active .head-actions{
+    gap:2px!important;
+  }
+
+  /* Slightly clearer question watermark */
+  body.game-active .question-watermark{
+    opacity:.10!important;
+  }
+}
+
+/* Maintain readable contrast in dark theme */
+[data-theme="dark"] .question,
+[data-theme="dark"] .question-text-layer{
+  color:#F0E5F4!important;
+}
+[data-theme="dark"] .answer{
+  color:#F3EDF5!important;
+}
+
+/* Stage screen identity consistency without changing its dimensions */
+.stage-card.selected{
+  border-color:var(--itqan-purple)!important;
+}
+.stage-card.selected .stage-name{
+  color:var(--itqan-purple-dark)!important;
+}
+
 </style>
 </head>
 <body>
