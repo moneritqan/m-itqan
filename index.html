@@ -2317,7 +2317,7 @@ body:has(.overlay.show) .answer.selected{
 @media(max-width:760px){
   #stageScreen.stage-select{
     min-height:calc(100svh - 110px) !important;
-    display:flex !important;
+    display:flex;
     flex-direction:column !important;
     justify-content:flex-start !important;
     padding:18px 10px 16px !important;
@@ -2627,6 +2627,23 @@ body:has(.overlay.show) .answer.selected{
   filter:none!important;
   background:linear-gradient(135deg,#7C499C,#a565bf)!important;
   box-shadow:0 10px 24px rgba(124,73,156,.20)!important;
+}
+
+
+/* ===== V5.8.4 CRITICAL SCREEN-NAVIGATION FIX =====
+   hidden-screen MUST beat every layout rule, including mobile stage flex. */
+html body #stageScreen.hidden-screen,
+html body #gameScreen.hidden-screen,
+html body #endScreen.hidden-screen,
+html body .hidden-screen{
+  display:none!important;
+}
+
+/* stage screen may be flex only while it is visible */
+@media(max-width:760px){
+  html body #stageScreen.stage-select:not(.hidden-screen){
+    display:flex!important;
+  }
 }
 
 </style>
@@ -3193,7 +3210,6 @@ let stageStartInProgress=false;
 function startSelectedStage(){
  if(stageStartInProgress)return;
 
- /* Read selected stage from both state and DOM */
  const selectedCard=$('stageGrid')?.querySelector('.stage-card.selected');
  const stage=selectedStage || selectedCard?.dataset.stage || '';
  if(!stage){
@@ -3203,15 +3219,15 @@ function startSelectedStage(){
  selectedStage=stage;
  stageStartInProgress=true;
 
- /* Navigation is first and unconditional */
+ /* Critical: switch screens immediately */
  $('stageScreen').classList.add('hidden-screen');
- $('endScreen').classList.add('hidden-screen');
  $('gameScreen').classList.remove('hidden-screen');
+ $('endScreen').classList.add('hidden-screen');
  document.body.classList.add('game-active');
  document.body.classList.remove('final-question');
  window.scrollTo(0,0);
 
- /* Prepare the round only after the game screen is visible */
+ /* Prepare game after the screen has switched */
  setTimeout(()=>{
    try{
      clearInterval(timerId);
@@ -3227,13 +3243,21 @@ function startSelectedStage(){
    }catch(err){
      console.error('round start error',err);
      stageStartInProgress=false;
-     /* Keep game screen visible; show a readable fallback rather than returning to stages */
-     if($('questionText'))$('questionText').textContent='جاري تجهيز السؤال…';
+     if($('questionText'))$('questionText').textContent='حدث خطأ أثناء تجهيز السؤال. أعد المحاولة.';
    }
  },0);
 }
 
 $('startBtn').addEventListener('click',startSelectedStage);
+$('startBtn').addEventListener('click',()=>{
+ setTimeout(()=>{
+   if(!$('gameScreen').classList.contains('hidden-screen')){
+     $('stageScreen').classList.add('hidden-screen');
+     $('stageScreen').style.display='none';
+   }
+ },40);
+});
+
 
 $('restartBtn').onclick=()=>{
  idx=0;used={fifty:false,audience:false,friend:false,swap:false};
