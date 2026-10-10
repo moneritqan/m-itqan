@@ -2646,6 +2646,116 @@ html body .hidden-screen{
   }
 }
 
+
+/* ===== V5.8.5 intro-only refinements — no gameplay/layout changes ===== */
+
+/* 1) Keep title clearly mauve throughout the entire intro */
+#cinema .cinema-title{
+  color:#7C499C!important;
+  text-shadow:
+    0 7px 22px rgba(124,73,156,.16),
+    0 1px 2px rgba(255,255,255,.55)!important;
+  animation:titleIn .95s 1.05s forwards!important;
+}
+
+/* 2) Soft mauve halo behind the logo */
+#cinema .cinema-logo-wrap::before{
+  width:100%!important;
+  height:100%!important;
+  background:
+    radial-gradient(circle,
+      rgba(124,73,156,.22) 0%,
+      rgba(124,73,156,.11) 36%,
+      rgba(124,73,156,.045) 54%,
+      transparent 72%)!important;
+  filter:blur(16px)!important;
+  opacity:.78;
+  animation:introLogoHalo 4.2s ease-in-out infinite!important;
+}
+@keyframes introLogoHalo{
+  0%,100%{transform:scale(.94);opacity:.58}
+  50%{transform:scale(1.08);opacity:.88}
+}
+
+/* 3) One elegant light sweep across the logo after it appears */
+#cinema .cinema-logo-wrap::after{
+  content:"";
+  position:absolute;
+  top:3%;
+  bottom:3%;
+  width:18%;
+  left:-28%;
+  z-index:7;
+  pointer-events:none;
+  background:linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255,255,255,.16) 20%,
+    rgba(255,255,255,.88) 50%,
+    rgba(255,255,255,.18) 80%,
+    transparent 100%
+  );
+  filter:blur(3px);
+  transform:skewX(-14deg);
+  opacity:0;
+  animation:introLogoSweep 1.05s 1.65s ease-out 1 forwards!important;
+}
+@keyframes introLogoSweep{
+  0%{left:-28%;opacity:0}
+  14%{opacity:.82}
+  78%{opacity:.74}
+  100%{left:112%;opacity:0}
+}
+
+/* 4) Premium divider: mauve edges with a gold center */
+#cinema .cinema-line{
+  height:2px!important;
+  background:linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(124,73,156,.35) 14%,
+    #7C499C 34%,
+    #B58925 50%,
+    #7C499C 66%,
+    rgba(124,73,156,.35) 86%,
+    transparent 100%
+  )!important;
+  box-shadow:
+    0 0 10px rgba(124,73,156,.12),
+    0 0 7px rgba(181,137,37,.08)!important;
+}
+
+/* 5) One gentle pulse after the intro stabilizes */
+#cinema #cinemaBtn.cinema-btn{
+  animation:
+    introButtonReveal .65s 2.15s both,
+    introButtonPulse .72s 3.15s ease-in-out 1!important;
+}
+@keyframes introButtonPulse{
+  0%,100%{
+    transform:scale(1);
+    box-shadow:0 14px 34px rgba(83,42,104,.26),0 0 0 1px rgba(255,255,255,.22) inset
+  }
+  50%{
+    transform:scale(1.035);
+    box-shadow:0 18px 40px rgba(83,42,104,.34),0 0 22px rgba(124,73,156,.18)
+  }
+}
+
+/* Mobile: keep all effects restrained */
+@media(max-width:760px){
+  #cinema .cinema-logo-wrap::before{
+    filter:blur(13px)!important;
+    opacity:.70;
+  }
+  #cinema .cinema-logo-wrap::after{
+    width:20%;
+  }
+  #cinema .cinema-line{
+    height:1.5px!important;
+  }
+}
+
 </style>
 </head>
 <body>
