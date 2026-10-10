@@ -2105,6 +2105,299 @@ body:has(.overlay.show) .answer.selected{
   color:var(--itqan-purple-dark)!important;
 }
 
+
+/* ===== V5.8 mobile height rebalance + stacked stages + cinematic dusk-to-light ===== */
+
+/* 1) Cinematic intro: dark first, then reveal the light identity */
+.cinema{
+  background:
+    radial-gradient(circle at 50% 34%, rgba(120,77,165,.20), transparent 18%),
+    radial-gradient(circle at 50% 56%, rgba(91,48,121,.18), transparent 36%),
+    linear-gradient(180deg,#040208 0%, #0d0711 46%, #1a0f22 100%) !important;
+  color:#f7f0fb;
+  animation:cinemaBaseSettle 3.2s ease both;
+}
+.cinema::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  background:
+    radial-gradient(circle at 20% 18%, rgba(136,87,182,.22), transparent 14%),
+    radial-gradient(circle at 78% 24%, rgba(90,60,130,.20), transparent 16%),
+    radial-gradient(circle at 50% 58%, rgba(255,255,255,.03), transparent 30%),
+    linear-gradient(180deg, rgba(7,5,12,.86) 0%, rgba(10,7,16,.76) 42%, rgba(23,15,33,.44) 100%);
+  z-index:0;
+  animation:cinemaNightFade 3.1s 1s forwards;
+}
+.cinema::after{
+  content:"";
+  position:absolute;
+  inset:-8%;
+  pointer-events:none;
+  background:
+    radial-gradient(circle at 50% 42%, rgba(255,255,255,.24), transparent 16%),
+    radial-gradient(circle at 50% 56%, rgba(255,255,255,.15), transparent 28%),
+    linear-gradient(180deg,#ffffff 0%,#fbf8fc 52%,#f5eef8 100%);
+  opacity:0;
+  z-index:1;
+  animation:cinemaLightReveal 2.9s 1.15s forwards;
+}
+.cinema-inner{position:relative; z-index:2 !important}
+.cinema-luxury-word,
+.cinema-kicker,
+.cinema-title,
+.cinema-sub{
+  color:#f5eef9 !important;
+  animation:cinemaTextToLight 2.8s 1.2s forwards;
+}
+.cinema-title{
+  text-shadow:0 10px 26px rgba(0,0,0,.22), 0 0 18px rgba(171,120,203,.12) !important;
+}
+.cinema-sub{opacity:0; animation:fadeIn .8s 1.72s forwards, cinemaTextToLight 2.8s 1.2s forwards !important}
+.cinema-btn{
+  background:linear-gradient(135deg,#5f3578,#8f5db1) !important;
+  box-shadow:0 14px 35px rgba(22,10,31,.42),0 0 28px rgba(151,92,186,.22) !important;
+  animation:fadeUp .85s 2.12s forwards, cinemaButtonToLight 2.8s 1.25s forwards !important;
+}
+.cinema-logo-wrap:before{
+  background:radial-gradient(circle, rgba(171,117,210,.32), transparent 68%) !important;
+}
+.cinema-ring,
+.cinema-beam{
+  opacity:.72;
+  animation-duration:5.5s;
+}
+.cinema-particles i{
+  background:rgba(255,255,255,.88) !important;
+  box-shadow:0 0 12px rgba(255,255,255,.28), 0 0 20px rgba(165,108,198,.18) !important;
+}
+@keyframes cinemaNightFade{
+  0%{opacity:1}
+  100%{opacity:0}
+}
+@keyframes cinemaLightReveal{
+  0%{opacity:0; transform:scale(1.04)}
+  100%{opacity:1; transform:scale(1)}
+}
+@keyframes cinemaTextToLight{
+  0%{color:#f5eef9}
+  100%{color:#2c2230}
+}
+@keyframes cinemaButtonToLight{
+  0%{
+    background:linear-gradient(135deg,#5f3578,#8f5db1);
+    color:#fff;
+    box-shadow:0 14px 35px rgba(22,10,31,.42),0 0 28px rgba(151,92,186,.22)
+  }
+  100%{
+    background:linear-gradient(135deg,#7C499C,#a565bf);
+    color:#fff;
+    box-shadow:0 16px 42px rgba(89,39,110,.38),0 0 30px rgba(173,92,205,.18)
+  }
+}
+@keyframes cinemaBaseSettle{
+  0%{filter:saturate(.92) brightness(.95)}
+  100%{filter:saturate(1) brightness(1)}
+}
+
+/* 2) Mobile question screen: higher header + slightly taller question/answers */
+@media(max-width:760px){
+  body.game-active .app{
+    padding-top:4px !important;
+  }
+  body.game-active .header{
+    min-height:72px !important;
+    height:72px !important;
+    padding:8px 10px !important;
+    border-radius:16px !important;
+    grid-template-columns:78px minmax(0,1fr) 104px !important;
+    column-gap:6px !important;
+  }
+  body.game-active .head-actions .iconbtn{
+    min-width:34px !important;
+    height:34px !important;
+  }
+  body.game-active .header .title h1{
+    font-size:1rem !important;
+    line-height:1.08;
+  }
+  body.game-active .header .logo{
+    width:78px !important;
+    max-height:48px !important;
+  }
+
+  body.game-active #gameScreen{
+    height:calc(100svh - 78px) !important;
+  }
+  body.game-active #gameScreen .stage{
+    gap:2px;
+  }
+  body.game-active .status{
+    margin-bottom:4px !important;
+  }
+  body.game-active .question{
+    min-height:116px !important;
+    max-height:21svh !important;
+    padding:28px 12px 12px !important;
+    border-radius:14px !important;
+  }
+  body.game-active .question-text-layer{
+    font-size:1.02rem;
+    line-height:1.34 !important;
+  }
+  body.game-active .question-watermark{
+    max-height:76% !important;
+    opacity:.115 !important;
+  }
+
+  body.game-active .answers{
+    grid-template-rows:repeat(4, minmax(62px, 1fr)) !important;
+    gap:6px !important;
+    margin-top:6px !important;
+  }
+  body.game-active .answer{
+    min-height:62px !important;
+    max-height:72px !important;
+    height:62px !important;
+    border-radius:12px !important;
+    font-size:.88rem !important;
+    line-height:1.25 !important;
+    padding-top:9px !important;
+    padding-bottom:9px !important;
+  }
+  body.game-active .answer[dir="rtl"]{
+    padding-right:44px !important;
+    padding-left:10px !important;
+  }
+  body.game-active .answer[dir="rtl"]:before{
+    right:9px !important;
+  }
+  body.game-active .answer[dir="ltr"]{
+    padding-left:44px !important;
+    padding-right:10px !important;
+  }
+  body.game-active .answer[dir="ltr"]:before{
+    left:9px !important;
+  }
+  body.game-active .answer:before{
+    width:28px !important;
+    height:28px !important;
+    font-size:.76rem !important;
+    border-radius:9px !important;
+  }
+
+  body.game-active .lifelines{
+    min-height:62px !important;
+    height:62px !important;
+    border-radius:14px !important;
+    padding:5px 4px !important;
+    gap:3px !important;
+  }
+  body.game-active .life{
+    min-height:50px !important;
+    height:50px !important;
+    border-radius:11px !important;
+  }
+  body.game-active .life-label{
+    font-size:.63rem !important;
+  }
+
+  /* short phones: keep balance and avoid overflow */
+  @media(max-height:760px){
+    body.game-active .header{min-height:66px !important;height:66px !important}
+    body.game-active #gameScreen{height:calc(100svh - 72px) !important}
+    body.game-active .question{min-height:104px !important;max-height:19svh !important}
+    body.game-active .answers{grid-template-rows:repeat(4,56px) !important}
+    body.game-active .answer{min-height:56px !important;height:56px !important;max-height:56px !important}
+  }
+}
+
+/* 3) Mobile stage screen: stacked cards filling the page */
+@media(max-width:760px){
+  #stageScreen.stage-select{
+    min-height:calc(100svh - 110px) !important;
+    display:flex !important;
+    flex-direction:column !important;
+    justify-content:flex-start !important;
+    padding:18px 10px 16px !important;
+  }
+  #stageScreen.stage-select h2{
+    margin-bottom:6px !important;
+    font-size:1.65rem !important;
+  }
+  #stageScreen.stage-select > p{
+    margin:0 0 10px !important;
+    line-height:1.45;
+    font-size:.9rem !important;
+  }
+  #stageScreen .stage-grid{
+    grid-template-columns:1fr !important;
+    gap:8px !important;
+    margin-top:10px !important;
+  }
+  #stageScreen .stage-card{
+    min-height:94px !important;
+    padding:10px 12px !important;
+    border-radius:16px !important;
+    display:grid !important;
+    grid-template-columns:58px 1fr !important;
+    grid-template-areas:
+      "icon name"
+      "icon level"
+      "icon meta" !important;
+    text-align:right !important;
+    align-items:center !important;
+    row-gap:2px !important;
+  }
+  #stageScreen .stage-icon{
+    grid-area:icon !important;
+    width:50px !important;
+    height:50px !important;
+    margin:0 !important;
+    justify-self:center !important;
+    align-self:center !important;
+    border-radius:14px !important;
+    font-size:1.4rem !important;
+  }
+  #stageScreen .stage-name{
+    grid-area:name !important;
+    font-size:1.02rem !important;
+    margin:0 !important;
+    line-height:1.1 !important;
+  }
+  #stageScreen .stage-level{
+    grid-area:level !important;
+    width:max-content;
+    font-size:.67rem !important;
+    padding:3px 10px !important;
+    margin:0 !important;
+  }
+  #stageScreen .stage-meta{
+    grid-area:meta !important;
+    justify-content:flex-start !important;
+    gap:7px !important;
+    margin-top:0 !important;
+  }
+  #stageScreen .stage-meta span{
+    font-size:.7rem !important;
+    padding:2px 7px !important;
+  }
+  #stageScreen .stage-selected-note{
+    margin-top:10px !important;
+    font-size:.9rem !important;
+  }
+  #stageScreen .stage-start-wrap{
+    margin-top:auto !important;
+    padding-top:10px !important;
+  }
+  #stageScreen .bigbtn{
+    min-height:58px !important;
+    border-radius:16px !important;
+    font-size:1rem !important;
+  }
+}
+
 </style>
 </head>
 <body>
