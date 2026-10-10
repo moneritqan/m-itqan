@@ -2577,6 +2577,58 @@ body:has(.overlay.show) .answer.selected{
   user-select:none;
 }
 
+
+/* ===== V5.8.3 definitive fixes ===== */
+
+/* Intro button must remain visible after the dark -> light reveal */
+#cinema #cinemaBtn.cinema-btn{
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  position:relative!important;
+  z-index:20!important;
+  opacity:1!important;
+  visibility:visible!important;
+  transform:none!important;
+  color:#ffffff!important;
+  background:linear-gradient(135deg,#6f3d8c 0%,#8e52aa 55%,#a865bd 100%)!important;
+  border:1px solid rgba(124,73,156,.34)!important;
+  box-shadow:
+    0 14px 34px rgba(83,42,104,.26),
+    0 0 0 1px rgba(255,255,255,.22) inset!important;
+  animation:introButtonReveal .65s 2.15s both!important;
+}
+#cinema #cinemaBtn.cinema-btn:hover,
+#cinema #cinemaBtn.cinema-btn:focus{
+  color:#ffffff!important;
+  background:linear-gradient(135deg,#63347f,#8b4fa9 58%,#ac68c2)!important;
+  box-shadow:0 18px 40px rgba(83,42,104,.32)!important;
+}
+#cinema #cinemaBtn.cinema-btn::before{
+  animation:buttonShine 2.8s 3.1s infinite!important;
+}
+@keyframes introButtonReveal{
+  0%{opacity:0;transform:translateY(10px) scale(.97)}
+  100%{opacity:1;transform:translateY(0) scale(1)}
+}
+
+/* Start button is never natively disabled on mobile.
+   Visual state only; JS decides if a stage has been selected. */
+#startBtn{
+  pointer-events:auto!important;
+  touch-action:manipulation!important;
+}
+#startBtn.stage-not-selected{
+  opacity:.48!important;
+  filter:saturate(.65);
+}
+#startBtn.stage-ready{
+  opacity:1!important;
+  filter:none!important;
+  background:linear-gradient(135deg,#7C499C,#a565bf)!important;
+  box-shadow:0 10px 24px rgba(124,73,156,.20)!important;
+}
+
 </style>
 </head>
 <body>
@@ -2662,7 +2714,7 @@ body:has(.overlay.show) .answer.selected{
   <p>اختر المرحلة المناسبة، وسيتم بناء جولة من 15 سؤالًا متدرجة من 10 إلى 30 نقطة.</p>
   <div id="stageGrid" class="stage-grid"></div>
   <div id="stageSelectedNote" class="stage-selected-note">اختر مرحلة للبدء</div>
-  <div class="stage-start-wrap"><button id="startBtn" class="bigbtn" disabled style="opacity:.45">ابدأ التحدي</button></div>
+  <div class="stage-start-wrap"><button id="startBtn" type="button" class="bigbtn stage-not-selected">ابدأ التحدي</button></div>
 </section>
 
 
@@ -2881,10 +2933,12 @@ function buildStages(){
   'المتوسط':{icon:'🧠',level:'متوسط',desc:'استنتاج وتنوع'},
   'الثانوي':{icon:'🎓',level:'متقدم',desc:'تحليل واستدلال'}
  };
- const grid=$('stageGrid');grid.innerHTML='';
+ const grid=$('stageGrid');
+ grid.innerHTML='';
  STAGES.forEach(s=>{
    const info=meta[s];
    const b=document.createElement('button');
+   b.type='button';
    b.className='stage-card';
    b.dataset.stage=s;
    b.innerHTML=`
@@ -2895,20 +2949,16 @@ function buildStages(){
        <span>${STAGE_COUNTS[s]} سؤالًا</span>
        <span>${info.desc}</span>
      </div>`;
-   const chooseStage=()=>{
+   b.addEventListener('click',()=>{
      selectedStage=s;
-     [...grid.children].forEach(x=>x.classList.remove('selected'));
+     [...grid.querySelectorAll('.stage-card')].forEach(x=>x.classList.remove('selected'));
      b.classList.add('selected');
      $('stageSelectedNote').textContent=`تم اختيار: ${s}`;
-     $('startBtn').disabled=false;
-     $('startBtn').style.opacity='1';
-   };
-   b.onclick=chooseStage;
-   b.addEventListener('pointerup',e=>{
-     if(e.pointerType==='touch'){e.preventDefault();chooseStage();}
-   },{passive:false});
-   grid.appendChild(b)
- })
+     $('startBtn').classList.remove('stage-not-selected');
+     $('startBtn').classList.add('stage-ready');
+   });
+   grid.appendChild(b);
+ });
 }
 buildStages();
 window.addEventListener('resize',()=>{if(document.body.classList.contains('game-active'))setTimeout(fitMobileQuizText,80)});
@@ -3139,57 +3189,52 @@ $('cinemaBtn').onclick=async()=>{
  setTimeout(()=>c.remove(),1360);
 };
 let stageStartInProgress=false;
-function startSelectedStage(e){
- if(e){e.preventDefault();e.stopPropagation();}
- if(stageStartInProgress)return false;
 
+function startSelectedStage(){
+ if(stageStartInProgress)return;
+
+ /* Read selected stage from both state and DOM */
  const selectedCard=$('stageGrid')?.querySelector('.stage-card.selected');
- if(!selectedStage && selectedCard?.dataset.stage)selectedStage=selectedCard.dataset.stage;
- if(!selectedStage){
+ const stage=selectedStage || selectedCard?.dataset.stage || '';
+ if(!stage){
    $('stageSelectedNote').textContent='اختر مرحلة أولًا';
-   return false;
+   return;
  }
-
+ selectedStage=stage;
  stageStartInProgress=true;
- clearInterval(timerId);
- stopAudio();
 
- try{
-   buildRound();
-   idx=0;
-   used={fifty:false,audience:false,friend:false,swap:false};
-   ['fifty','audience','friend','swap'].forEach(id=>$(id).classList.remove('used'));
+ /* Navigation is first and unconditional */
+ $('stageScreen').classList.add('hidden-screen');
+ $('endScreen').classList.add('hidden-screen');
+ $('gameScreen').classList.remove('hidden-screen');
+ document.body.classList.add('game-active');
+ document.body.classList.remove('final-question');
+ window.scrollTo(0,0);
 
-   /* Switch screens BEFORE any sound or rendering work */
-   $('stageScreen').classList.add('hidden-screen');
-   $('endScreen').classList.add('hidden-screen');
-   $('gameScreen').classList.remove('hidden-screen');
-   document.body.classList.add('game-active');
-   document.body.classList.remove('final-question');
-   window.scrollTo(0,0);
-
-   /* Give the browser one frame to paint the game screen */
-   requestAnimationFrame(()=>{
+ /* Prepare the round only after the game screen is visible */
+ setTimeout(()=>{
+   try{
+     clearInterval(timerId);
+     stopAudio();
+     buildRound();
+     idx=0;
+     used={fifty:false,audience:false,friend:false,swap:false};
+     ['fifty','audience','friend','swap'].forEach(id=>$(id).classList.remove('used'));
      Promise.resolve(render())
        .catch(err=>console.error('render error',err))
        .finally(()=>{stageStartInProgress=false});
-     /* Sound is completely independent of navigation */
      try{playSound(MAP.intro_voice,6500)}catch(_){}
-   });
- }catch(err){
-   console.error('start stage error',err);
-   stageStartInProgress=false;
-   /* Last-resort navigation so mobile never appears stuck */
-   $('stageScreen').classList.add('hidden-screen');
-   $('gameScreen').classList.remove('hidden-screen');
-   document.body.classList.add('game-active');
- }
- return false;
+   }catch(err){
+     console.error('round start error',err);
+     stageStartInProgress=false;
+     /* Keep game screen visible; show a readable fallback rather than returning to stages */
+     if($('questionText'))$('questionText').textContent='جاري تجهيز السؤال…';
+   }
+ },0);
 }
-$('startBtn').onclick=startSelectedStage;
-$('startBtn').addEventListener('pointerup',e=>{
- if(e.pointerType==='touch')startSelectedStage(e);
-},{passive:false});
+
+$('startBtn').addEventListener('click',startSelectedStage);
+
 $('restartBtn').onclick=()=>{
  idx=0;used={fifty:false,audience:false,friend:false,swap:false};
  ['fifty','audience','friend','swap'].forEach(id=>$(id).classList.remove('used'));
@@ -3205,7 +3250,7 @@ $('changeStageBtn').onclick=()=>{
  $('gameScreen').classList.add('hidden-screen');
  $('stageScreen').classList.remove('hidden-screen');
  $('stageSelectedNote').textContent='اختر مرحلة للبدء';
- $('startBtn').disabled=true;$('startBtn').style.opacity='.45';
+ $('startBtn').classList.add('stage-not-selected');$('startBtn').classList.remove('stage-ready');
  [...$('stageGrid').children].forEach(x=>x.classList.remove('selected'));
  window.scrollTo({top:0,behavior:'smooth'});
 };
