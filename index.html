@@ -2398,6 +2398,72 @@ body:has(.overlay.show) .answer.selected{
   }
 }
 
+
+/* ===== V5.8.1 fixes ===== */
+
+/* Keep intro copy readable during the dark -> light transition */
+.cinema-title,
+.cinema-sub,
+.cinema-note,
+.cinema-luxury-caption,
+.cinema-luxury-word{
+  position:relative;
+  z-index:4!important;
+}
+.cinema-title{
+  color:#f5eef9!important;
+  text-shadow:0 2px 18px rgba(0,0,0,.45),0 0 20px rgba(171,120,203,.18)!important;
+  animation:titleIn .95s 1.05s forwards, introTitleLight 2.1s 2.2s forwards!important;
+}
+.cinema-sub{
+  color:#e9dff0!important;
+  text-shadow:0 1px 12px rgba(0,0,0,.38)!important;
+  animation:fadeIn .8s 1.72s forwards, introSubLight 2.1s 2.2s forwards!important;
+}
+.cinema-note{
+  color:#eadff0!important;
+  text-shadow:0 1px 10px rgba(0,0,0,.34)!important;
+  animation:fadeIn .7s 2.30s forwards, introNoteLight 2.0s 2.35s forwards!important;
+}
+.cinema-luxury-caption{
+  color:#e4c86b!important;
+  text-shadow:0 1px 10px rgba(0,0,0,.32)!important;
+  animation:fadeIn .7s 2.72s forwards, introCaptionLight 1.8s 2.55s forwards!important;
+}
+.cinema-luxury-word{
+  color:rgba(255,255,255,.045)!important;
+  animation:introWordLight 2.2s 1.9s forwards!important;
+}
+@keyframes introTitleLight{
+  0%,25%{color:#f5eef9;text-shadow:0 2px 18px rgba(0,0,0,.45),0 0 20px rgba(171,120,203,.18)}
+  100%{color:#5f3478;text-shadow:0 8px 24px rgba(124,73,156,.10)}
+}
+@keyframes introSubLight{
+  0%,25%{color:#e9dff0;text-shadow:0 1px 12px rgba(0,0,0,.38)}
+  100%{color:#6f6175;text-shadow:none}
+}
+@keyframes introNoteLight{
+  0%,25%{color:#eadff0}
+  100%{color:#7C499C}
+}
+@keyframes introCaptionLight{
+  0%,25%{color:#e4c86b}
+  100%{color:#9a7421}
+}
+@keyframes introWordLight{
+  0%,25%{color:rgba(255,255,255,.045)}
+  100%{color:rgba(124,73,156,.032)}
+}
+
+/* Mobile: remove question count from stage cards */
+@media(max-width:760px){
+  #stageScreen .stage-meta span:first-child{display:none!important}
+  #stageScreen .stage-meta{margin-top:2px!important}
+  #stageScreen .stage-card{min-height:88px!important}
+  #stageScreen,#stageGrid,.stage-card,#startBtn{touch-action:manipulation}
+  #startBtn{position:relative;z-index:8;pointer-events:auto!important}
+}
+
 </style>
 </head>
 <body>
@@ -2715,7 +2781,7 @@ function buildStages(){
        <span>${STAGE_COUNTS[s]} سؤالًا</span>
        <span>${info.desc}</span>
      </div>`;
-   b.onclick=()=>{
+   const chooseStage=()=>{
      selectedStage=s;
      [...grid.children].forEach(x=>x.classList.remove('selected'));
      b.classList.add('selected');
@@ -2723,6 +2789,7 @@ function buildStages(){
      $('startBtn').disabled=false;
      $('startBtn').style.opacity='1';
    };
+   b.onclick=chooseStage;
    grid.appendChild(b)
  })
 }
@@ -2954,7 +3021,23 @@ $('cinemaBtn').onclick=async()=>{
  setTimeout(()=>c.classList.add('exit'),710);
  setTimeout(()=>c.remove(),1360);
 };
-$('startBtn').onclick=async()=>{if(!selectedStage)return;buildRound();idx=0;used={fifty:false,audience:false,friend:false,swap:false};['fifty','audience','friend','swap'].forEach(id=>$(id).classList.remove('used'));$('stageScreen').classList.add('hidden-screen');$('endScreen').classList.add('hidden-screen');$('gameScreen').classList.remove('hidden-screen');await playSound(MAP.intro_voice,6500);render()};
+async function startSelectedStage(){
+ if(!selectedStage)return;
+ clearInterval(timerId);
+ stopAudio();
+ buildRound();
+ idx=0;
+ used={fifty:false,audience:false,friend:false,swap:false};
+ ['fifty','audience','friend','swap'].forEach(id=>$(id).classList.remove('used'));
+ $('stageScreen').classList.add('hidden-screen');
+ $('endScreen').classList.add('hidden-screen');
+ $('gameScreen').classList.remove('hidden-screen');
+ document.body.classList.add('game-active');
+ window.scrollTo(0,0);
+ render();
+ playSound(MAP.intro_voice,6500);
+}
+$('startBtn').onclick=startSelectedStage;
 $('restartBtn').onclick=()=>{
  idx=0;used={fifty:false,audience:false,friend:false,swap:false};
  ['fifty','audience','friend','swap'].forEach(id=>$(id).classList.remove('used'));
